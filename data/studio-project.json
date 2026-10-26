@@ -1,0 +1,57 @@
+{
+  "id": "project-morning",
+  "title": "Morning in the city",
+  "aspectRatio": "16:9",
+  "shots": [
+    {
+      "id": "shot-1",
+      "title": "City wakes",
+      "prompt": "Aerial drift over a city at sunrise, warm haze, slow push in",
+      "durationSec": 6,
+      "camera": "Push in",
+      "transition": "cut",
+      "takes": ["vid-03", "vid-01"],
+      "keeper": 0
+    },
+    {
+      "id": "shot-2",
+      "title": "Café",
+      "prompt": "Close-up of espresso pouring in a quiet café, shallow depth of field",
+      "durationSec": 4,
+      "camera": "Static",
+      "transition": "dissolve",
+      "takes": ["vid-04"],
+      "keeper": 0
+    },
+    {
+      "id": "shot-3",
+      "title": "Window",
+      "prompt": "A woman looks out a window in soft morning light",
+      "durationSec": 4,
+      "camera": "Static",
+      "transition": "cut",
+      "takes": ["vid-05", "vid-06"],
+      "keeper": 1
+    },
+    {
+      "id": "shot-4",
+      "title": "Street",
+      "prompt": "Pedestrians cross a busy street in slow motion",
+      "durationSec": 6,
+      "camera": "Handheld",
+      "transition": "cut",
+      "takes": [],
+      "keeper": null
+    },
+    {
+      "id": "shot-5",
+      "title": "Sunset",
+      "prompt": "Golden sunset over calm water, camera slowly pulls out",
+      "durationSec": 6,
+      "camera": "Pull out",
+      "transition": "fade",
+      "takes": ["vid-07", "vid-02"],
+      "keeper": 0
+    }
+  ]
+}
