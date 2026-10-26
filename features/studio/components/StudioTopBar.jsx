@@ -22,7 +22,7 @@ export default function StudioTopBar({ project, children }) {
       <div className="ml-auto flex items-center gap-2">
         <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-studio-line px-3 text-[12px] tabular-nums text-studio-ink-muted">
           <Coins aria-hidden size={14} strokeWidth={1.75} />
-          <span className="text-studio-ink">{formatCredits(project.credits)}</span> credits
+          <span className="text-studio-ink">{`${formatCredits(project.credits)} credits`}</span>
         </span>
         {children}
       </div>
