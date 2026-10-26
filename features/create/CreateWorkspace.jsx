@@ -1,6 +1,8 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
+import Composer from './composer/Composer';
+import { composerReducer, initialComposerState } from './composer/composer-state';
 import Feed from './components/Feed';
 import HistoryStrip from './components/HistoryStrip';
 import TopBar from './components/TopBar';
@@ -15,6 +17,8 @@ function syncModeToUrl(tab) {
 
 export default function CreateWorkspace({ initialFeed, initialTab }) {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [composer, dispatchComposer] = useReducer(composerReducer, initialTab === 'video' ? 'video' : 'image', initialComposerState);
+  const promptRef = useRef(null);
   const items = initialFeed;
 
   const history = useMemo(
@@ -26,10 +30,18 @@ export default function CreateWorkspace({ initialFeed, initialTab }) {
     [items],
   );
 
+  // The Image/Video tabs and the composer's mode switch are one piece of state.
   const selectTab = useCallback((tab) => {
     setActiveTab(tab);
     syncModeToUrl(tab);
+    if (tab === 'image' || tab === 'video') dispatchComposer({ type: 'setMode', mode: tab });
     if (tab === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const changeMode = useCallback((mode) => {
+    dispatchComposer({ type: 'setMode', mode });
+    setActiveTab(mode);
+    syncModeToUrl(mode);
   }, []);
 
   const noop = useCallback(() => {}, []);
@@ -44,10 +56,16 @@ export default function CreateWorkspace({ initialFeed, initialTab }) {
         </div>
 
         <div className="items-start gap-6 lg:grid lg:grid-cols-[288px_1fr] 2xl:grid-cols-[320px_1fr]">
-          <aside
-            aria-label="Composer"
-            className="sticky top-[calc(var(--topbar-h)+var(--history-h)+16px)] hidden h-[calc(100dvh-var(--topbar-h)-var(--history-h)-32px)] rounded-panel bg-panel lg:block"
-          />
+          <div className="sticky top-[calc(var(--topbar-h)+var(--history-h)+16px)] hidden max-h-[calc(100dvh-var(--topbar-h)-var(--history-h)-32px)] overflow-y-auto rounded-panel lg:block">
+            <Composer
+              state={composer}
+              dispatch={dispatchComposer}
+              onModeChange={changeMode}
+              onGenerate={noop}
+              promptRef={promptRef}
+              className="min-h-[calc(100dvh-var(--topbar-h)-var(--history-h)-32px)]"
+            />
+          </div>
           <main id="feed" className="min-w-0 pb-40 lg:pb-12">
             <h1 className="sr-only">Create</h1>
             <Feed items={items} onOpen={noop} />
