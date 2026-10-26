@@ -10,9 +10,10 @@ import styles from './GenerationRow.module.css';
 function JobStatus({ generation, onCancel }) {
   const pct = Math.round(generation.progress * 100);
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-2">
-        <p aria-live="polite" className="text-[12px] font-medium text-ink">{`${generation.stage} · ${pct}%`}</p>
+    <div className="flex flex-col gap-1.5">
+      <p aria-live="polite" className="text-[12px] font-medium tabular-nums text-ink">{`${generation.stage} · ${pct}%`}</p>
+      <div className="flex items-center gap-2">
+        <ProgressBar value={generation.progress} label={`${generation.mode === 'video' ? 'Video' : 'Image'} generation progress`} className="flex-1" />
         <Button
           variant="ghost"
           size="sm"
@@ -23,7 +24,6 @@ function JobStatus({ generation, onCancel }) {
           {generation.cancelRequested ? 'Cancelling…' : 'Cancel'}
         </Button>
       </div>
-      <ProgressBar value={generation.progress} label={`${generation.mode === 'video' ? 'Video' : 'Image'} generation progress`} />
     </div>
   );
 }
