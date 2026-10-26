@@ -1,13 +1,12 @@
 'use client';
 
-import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useReducer, useRef, useState } from 'react';
 import Composer from './composer/Composer';
 import { composerReducer, initialComposerState } from './composer/composer-state';
 import Feed from './components/Feed';
 import HistoryStrip from './components/HistoryStrip';
 import TopBar from './components/TopBar';
-
-const HISTORY_LIMIT = 20;
+import { useGenerations } from './state/GenerationsProvider';
 
 /** Keep `?mode=` in the address bar without a server round-trip. */
 function syncModeToUrl(tab) {
@@ -15,20 +14,11 @@ function syncModeToUrl(tab) {
   window.history.replaceState(null, '', url);
 }
 
-export default function CreateWorkspace({ initialFeed, initialTab }) {
+export default function CreateWorkspace({ initialTab }) {
+  const { items, history, isSubmitting, generate, cancel, retry } = useGenerations();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [composer, dispatchComposer] = useReducer(composerReducer, initialTab === 'video' ? 'video' : 'image', initialComposerState);
   const promptRef = useRef(null);
-  const items = initialFeed;
-
-  const history = useMemo(
-    () =>
-      items
-        .filter((g) => g.status === 'done')
-        .flatMap((g) => g.results.map((media) => ({ generationId: g.id, media })))
-        .slice(0, HISTORY_LIMIT),
-    [items],
-  );
 
   // The Image/Video tabs and the composer's mode switch are one piece of state.
   const selectTab = useCallback((tab) => {
@@ -43,6 +33,24 @@ export default function CreateWorkspace({ initialFeed, initialTab }) {
     setActiveTab(mode);
     syncModeToUrl(mode);
   }, []);
+
+  const reuse = useCallback(
+    (generation) => {
+      dispatchComposer({ type: 'loadGeneration', generation });
+      setActiveTab(generation.mode);
+      syncModeToUrl(generation.mode);
+      promptRef.current?.focus();
+    },
+    [],
+  );
+
+  const handleGenerate = useCallback(
+    (body) => {
+      generate(body);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    [generate],
+  );
 
   const noop = useCallback(() => {}, []);
 
@@ -61,14 +69,15 @@ export default function CreateWorkspace({ initialFeed, initialTab }) {
               state={composer}
               dispatch={dispatchComposer}
               onModeChange={changeMode}
-              onGenerate={noop}
+              onGenerate={handleGenerate}
+              isSubmitting={isSubmitting}
               promptRef={promptRef}
               className="min-h-[calc(100dvh-var(--topbar-h)-var(--history-h)-32px)]"
             />
           </div>
           <main id="feed" className="min-w-0 pb-40 lg:pb-12">
             <h1 className="sr-only">Create</h1>
-            <Feed items={items} onOpen={noop} />
+            <Feed items={items} onOpen={noop} onReuse={reuse} onCancel={cancel} onRetry={retry} />
           </main>
         </div>
       </div>

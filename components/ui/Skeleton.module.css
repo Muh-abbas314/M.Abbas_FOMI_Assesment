@@ -1,0 +1,24 @@
+/* A soft light sweep across a placeholder, so waiting feels alive rather than frozen. */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.55) 50%, transparent 80%);
+  animation: sweep 1.4s ease-in-out infinite;
+}
+
+.studio::after {
+  background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.06) 50%, transparent 80%);
+}
+
+@keyframes sweep {
+  to {
+    transform: translateX(100%);
+  }
+}

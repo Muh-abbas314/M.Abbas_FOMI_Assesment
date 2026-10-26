@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import CreateWorkspace from '@/features/create/CreateWorkspace';
+import { GenerationsProvider } from '@/features/create/state/GenerationsProvider';
 import { getSeedFeed } from '@/lib/mock/seed-feed';
 
 export const metadata = { title: 'Create' };
@@ -17,10 +18,8 @@ async function CreateRoute({ searchParams }) {
   const { mode, fresh } = await searchParams;
   const isFresh = fresh === '1';
   return (
-    <CreateWorkspace
-      initialFeed={isFresh ? [] : getSeedFeed()}
-      initialTab={mode === 'image' || mode === 'video' ? mode : 'home'}
-      fresh={isFresh}
-    />
+    <GenerationsProvider initialFeed={isFresh ? [] : getSeedFeed()} fresh={isFresh}>
+      <CreateWorkspace initialTab={mode === 'image' || mode === 'video' ? mode : 'home'} fresh={isFresh} />
+    </GenerationsProvider>
   );
 }

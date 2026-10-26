@@ -1,8 +1,9 @@
 import Image from 'next/image';
 import { cssAspectRatio } from '@/lib/aspect';
+import { cn } from '@/lib/cn';
 
 /** A result tile. The aspect-ratio box reserves space before the image loads, so nothing shifts. */
-export default function ImageTile({ media, aspectRatio, sizes, onOpen, label, style }) {
+export default function ImageTile({ media, aspectRatio, sizes, onOpen, label, className, style }) {
   return (
     <button
       type="button"
@@ -10,7 +11,7 @@ export default function ImageTile({ media, aspectRatio, sizes, onOpen, label, st
       onClick={onOpen}
       aria-label={label}
       style={{ aspectRatio: cssAspectRatio(aspectRatio), ...style }}
-      className="group relative block w-full overflow-hidden rounded-tile bg-panel-strong"
+      className={cn('group relative block w-full overflow-hidden rounded-tile bg-panel-strong', className)}
     >
       <Image
         src={media.kind === 'video' ? media.poster : media.src}

@@ -1,0 +1,27 @@
+/* Finished results fade up one after another (delay set inline per tile). */
+.reveal {
+  animation: reveal 420ms var(--ease-out-soft) both;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+}
+
+/* Brief ring when a history thumbnail jumps to this row. */
+.row[data-highlighted="true"] {
+  border-radius: var(--radius-panel);
+  animation: highlight 1200ms ease-out;
+}
+
+@keyframes highlight {
+  0%,
+  40% {
+    box-shadow: 0 0 0 3px var(--color-accent-strong), 0 0 0 9px rgb(208 124 96 / 0.18);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent, 0 0 0 9px transparent;
+  }
+}
