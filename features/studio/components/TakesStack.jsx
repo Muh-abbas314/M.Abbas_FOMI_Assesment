@@ -70,10 +70,12 @@ export default function TakesStack({ shot, onChoose, onCompare, onCancel, onRetr
     <section aria-label="Takes for this shot" className="flex flex-col gap-2.5">
       <header className="flex items-center justify-between">
         <h3 className="text-[12px] font-semibold">Takes</h3>
-        <Button variant="studio-ghost" size="sm" className="-mr-1.5 h-7 px-2" disabled={done.length < 2} onClick={onCompare}>
-          <Columns2 aria-hidden size={14} strokeWidth={1.75} />
-          Compare takes
-        </Button>
+        <span className="hidden md:inline-flex">
+          <Button variant="studio-ghost" size="sm" className="-mr-1.5 h-7 px-2" disabled={done.length < 2} onClick={onCompare}>
+            <Columns2 aria-hidden size={14} strokeWidth={1.75} />
+            Compare takes
+          </Button>
+        </span>
       </header>
 
       {done.length > 0 ? (

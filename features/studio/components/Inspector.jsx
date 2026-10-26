@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { MoveLeft, MoveRight, Sparkles } from 'lucide-react';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
+import { cn } from '@/lib/cn';
 import { CAMERA_MOTIONS } from '@/lib/generation-options';
 import { takeCost } from '../cost';
 import { SHOT_DURATIONS, TRANSITIONS } from '../studio-options';
@@ -23,12 +24,22 @@ export function generateBlockedReason(shot, credits) {
   return null;
 }
 
-/** Everything about the selected shot: its fields, a Generate draft button, and (children) its takes. */
-export default function Inspector({ shot, number, total, credits = Infinity, onChange, onMove, onGenerate, children }) {
+/**
+ * Everything about the selected shot: its fields, a Generate draft button, and (children) its takes.
+ * `variant="panel"` is the desktop side panel; below 768px it shrinks to review mode (takes only),
+ * and on tablets it's hidden in favour of the "Edit shot" sheet. `variant="sheet"` shows everything.
+ */
+export default function Inspector({ shot, number, total, credits = Infinity, onChange, onMove, onGenerate, variant = 'sheet', children }) {
   const id = useId();
   const blocked = generateBlockedReason(shot, credits);
+  const panel = variant === 'panel';
+  const editing = cn('flex-col gap-4', panel ? 'hidden lg:flex' : 'flex');
   return (
-    <section aria-label="Shot inspector" className="flex min-h-0 flex-col gap-4 overflow-y-auto border-studio-line bg-studio-surface p-4 lg:border-l">
+    <section
+      aria-label={panel ? 'Shot inspector' : undefined}
+      className={cn('min-h-0 flex-col gap-4 overflow-y-auto bg-studio-surface', panel ? 'flex border-studio-line p-4 md:hidden lg:flex lg:border-l' : 'flex')}
+    >
+      <div className={editing}>
       <header className="flex items-center justify-between gap-2">
         <h2 className="text-[13px] font-semibold">
           Shot {number} <span className="font-normal text-studio-ink-muted">of {total}</span>
@@ -88,6 +99,7 @@ export default function Inspector({ shot, number, total, credits = Infinity, onC
           </p>
         </div>
       )}
+      </div>
 
       {children}
     </section>

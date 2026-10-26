@@ -18,7 +18,8 @@ export default function Board({ shots, selectedShotId, onSelect, onAdd }) {
         <h2 className="font-semibold">Board</h2>
         <p className="tabular-nums text-studio-ink-muted">{`${shots.length} shots · ${formatDuration(totalSeconds(shots))}`}</p>
       </header>
-      <ol aria-label="Shots" className="flex snap-x items-center gap-1.5 overflow-x-auto pb-1">
+      {/* A vertical list on phones (review mode), a horizontal strip from tablets up. */}
+      <ol aria-label="Shots" className="flex snap-x flex-col items-stretch gap-1.5 pb-1 md:flex-row md:items-center md:overflow-x-auto">
         {shots.map((shot, index) => {
           const next = shots[index + 1];
           const glyph = TRANSITION_GLYPHS[shot.transition] ?? TRANSITION_GLYPHS.cut;
@@ -29,20 +30,20 @@ export default function Board({ shots, selectedShotId, onSelect, onAdd }) {
                 <ShotCard shot={shot} number={index + 1} selected={shot.id === selectedShotId} onSelect={onSelect} />
               </li>
               {next && (
-                <li aria-label={`Shot ${index + 1} ${glyph.verb} shot ${index + 2}`} className="grid size-6 shrink-0 place-items-center rounded-full border border-studio-line text-studio-ink-muted">
+                <li aria-label={`Shot ${index + 1} ${glyph.verb} shot ${index + 2}`} className="grid size-6 shrink-0 place-items-center self-center rounded-full border border-studio-line text-studio-ink-muted">
                   <Icon aria-hidden size={12} strokeWidth={1.75} />
                 </li>
               )}
             </Fragment>
           );
         })}
-        <li className="shrink-0 pl-1.5">
+        <li className="shrink-0 md:pl-1.5">
           <button
             type="button"
             onClick={onAdd}
-            className="grid h-[118px] w-24 place-items-center rounded-card border border-dashed border-studio-line text-[12px] text-studio-ink-muted transition-[border-color,color,transform] duration-150 hover:border-studio-ink-muted/60 hover:text-studio-ink active:scale-[0.98] 2xl:h-[138px]"
+            className="grid h-12 w-full place-items-center rounded-card border border-dashed border-studio-line text-[12px] text-studio-ink-muted transition-[border-color,color,transform] duration-150 hover:border-studio-ink-muted/60 hover:text-studio-ink active:scale-[0.98] md:h-[118px] md:w-24 2xl:h-[138px]"
           >
-            <span className="flex flex-col items-center gap-1">
+            <span className="flex items-center gap-1.5 md:flex-col md:gap-1">
               <Plus aria-hidden size={18} strokeWidth={1.75} />
               Add shot
             </span>

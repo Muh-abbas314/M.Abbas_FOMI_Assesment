@@ -1,6 +1,9 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { CircleHelp, PencilLine } from 'lucide-react';
+import IconButton from '@/components/ui/IconButton';
+import Sheet from '@/components/ui/Sheet';
 import { useHotkeys } from '@/lib/hooks/use-hotkeys';
 import { buildTimeline } from './playback/timeline';
 import { useBoardPlayback } from './playback/use-board-playback';
@@ -12,6 +15,7 @@ import Inspector from './components/Inspector';
 import QueueButton from './components/QueueButton';
 import RenderFinalDialog from './components/RenderFinalDialog';
 import RenderQueue from './components/RenderQueue';
+import ShortcutsOverlay from './components/ShortcutsOverlay';
 import Stage from './components/Stage';
 import StudioTopBar from './components/StudioTopBar';
 import TakesStack from './components/TakesStack';
@@ -27,6 +31,8 @@ export default function StudioWorkspace() {
   const [stageMode, setStageMode] = useState('shot'); // 'shot' | 'board' | 'compare'
   const [queueOpen, setQueueOpen] = useState(false);
   const [finalOpen, setFinalOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
   const queue = useMemo(() => selectQueue(state), [state]);
   const activeCount = queue.filter((entry) => isActiveStatus(entry.status)).length;
   const { project } = state;
@@ -87,6 +93,7 @@ export default function StudioWorkspace() {
       chooseTake3: choose(3),
       chooseTake4: choose(4),
       generateTake: () => shot && generateTake(shot.id),
+      toggleShortcuts: () => setShortcutsOpen((open) => !open),
     };
   }, [dispatch, shot, chooseTake, generateTake, stageMode, changeStageMode, playback]);
 
@@ -117,7 +124,31 @@ export default function StudioWorkspace() {
     () => Object.fromEntries(STUDIO_SHORTCUTS.filter((s) => actions[s.action]).map((s) => [s.keys, actions[s.action]])),
     [actions],
   );
-  useHotkeys(bindings, { enabled: stageMode !== 'compare' && !finalOpen });
+  // Dialogs and compare own the keyboard while they're open.
+  useHotkeys(bindings, { enabled: stageMode !== 'compare' && !finalOpen && !shortcutsOpen && !editSheetOpen });
+
+  const takesFor = (target) => (
+    <TakesStack
+      shot={target}
+      onChoose={(takeId) => chooseTake(target.id, takeId)}
+      onCompare={() => {
+        setEditSheetOpen(false);
+        changeStageMode('compare');
+      }}
+      onCancel={(takeId) => cancelTake(target.id, takeId)}
+      onRetry={() => retryTake(target.id)}
+    />
+  );
+
+  const inspectorProps = shot && {
+    shot,
+    number,
+    total: project.shots.length,
+    credits: project.credits,
+    onChange: (patch) => dispatch({ type: 'updateShot', shotId: shot.id, patch }),
+    onMove: (delta) => dispatch({ type: 'moveShot', shotId: shot.id, delta }),
+    onGenerate: generateTake,
+  };
 
   return (
     <div
@@ -127,9 +158,15 @@ export default function StudioWorkspace() {
       <div className="lg:col-span-2">
         <StudioTopBar project={project}>
           <QueueButton activeCount={activeCount} open={queueOpen} onClick={() => setQueueOpen((open) => !open)} />
-          <Button variant="studio" size="sm" onClick={() => setFinalOpen(true)}>
-            {`Render final · ${finalCost(project.shots)} cr`}
-          </Button>
+          {/* Visibility lives on wrappers: a `hidden` class on Button would fight its own `inline-flex`. */}
+          <span className="hidden md:inline-flex">
+            <Button variant="studio" size="sm" onClick={() => setFinalOpen(true)}>
+              {`Render final · ${finalCost(project.shots)} cr`}
+            </Button>
+          </span>
+          <span className="hidden md:inline-flex">
+            <IconButton icon={CircleHelp} label="Keyboard shortcuts" tone="studio" size={32} tooltipAlign="end" onClick={() => setShortcutsOpen(true)} />
+          </span>
         </StudioTopBar>
       </div>
 
@@ -147,27 +184,31 @@ export default function StudioWorkspace() {
           setStageMode('shot');
         }}
         onCloseCompare={() => setStageMode('shot')}
+        headerAction={
+          shot && (
+            <span className="hidden md:inline-flex lg:hidden">
+              <Button variant="studio-ghost" size="sm" className="border border-studio-line" onClick={() => setEditSheetOpen(true)}>
+                <PencilLine aria-hidden size={14} strokeWidth={1.75} />
+                Edit shot
+              </Button>
+            </span>
+          )
+        }
       />
 
       {shot && (
-        <Inspector
-          shot={shot}
-          number={number}
-          total={project.shots.length}
-          credits={project.credits}
-          onChange={(patch) => dispatch({ type: 'updateShot', shotId: shot.id, patch })}
-          onMove={(delta) => dispatch({ type: 'moveShot', shotId: shot.id, delta })}
-          onGenerate={generateTake}
-        >
-          <TakesStack
-            shot={shot}
-            onChoose={(takeId) => chooseTake(shot.id, takeId)}
-            onCompare={() => changeStageMode('compare')}
-            onCancel={(takeId) => cancelTake(shot.id, takeId)}
-            onRetry={() => retryTake(shot.id)}
-          />
+        <Inspector {...inspectorProps} variant="panel">
+          <p data-testid="studio-review" className="rounded-tile border border-studio-line bg-studio-bg p-3 text-[12px] leading-relaxed text-studio-ink-muted md:hidden">
+            Shot editing is designed for larger screens — review and pick takes here.
+          </p>
+          {takesFor(shot)}
         </Inspector>
       )}
+
+      <Sheet open={editSheetOpen && Boolean(shot)} onClose={() => setEditSheetOpen(false)} title={`Edit shot ${number}`} tone="studio">
+        {shot && <Inspector {...inspectorProps}>{takesFor(shot)}</Inspector>}
+      </Sheet>
+      <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       <div className="lg:col-span-2 lg:min-h-0">
         <Board shots={project.shots} selectedShotId={state.selectedShotId} onSelect={selectShot} onAdd={() => dispatch({ type: 'addShot' })} />

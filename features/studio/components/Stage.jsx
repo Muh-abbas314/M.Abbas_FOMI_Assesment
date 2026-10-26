@@ -14,7 +14,7 @@ const VIEW_OPTIONS = [
  * The monitor. "Shot" loops the selected shot's keeper; "Board" plays the whole film as an
  * instant animatic; compare puts two takes side by side.
  */
-export default function Stage({ mode = 'shot', onModeChange, shot, number, playing, onTogglePlay, onKeep, onCloseCompare, playback, timeline }) {
+export default function Stage({ mode = 'shot', onModeChange, shot, number, playing, onTogglePlay, onKeep, onCloseCompare, playback, timeline, headerAction }) {
   const segment = timeline?.[playback?.index ?? 0];
   const previous = playback && playback.index > 0 ? timeline[playback.index - 1] : null;
 
@@ -23,7 +23,8 @@ export default function Stage({ mode = 'shot', onModeChange, shot, number, playi
       {mode !== 'compare' && onModeChange && (
         <div className="flex items-center justify-between gap-3">
           <Segmented label="Stage view" options={VIEW_OPTIONS} value={mode} onChange={onModeChange} tone="studio" size="sm" />
-          {mode === 'board' && <p className="hidden text-[12px] text-studio-ink-muted sm:block">Every keeper, back to back. Shots without a take show as slates.</p>}
+          {mode === 'board' && <p className="hidden min-w-0 flex-1 truncate text-right text-[12px] text-studio-ink-muted xl:block">Every keeper, back to back. Shots without a take show as slates.</p>}
+          {headerAction}
         </div>
       )}
 
