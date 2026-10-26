@@ -4,7 +4,7 @@
     {
       "name": "web",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-lc", "source ~/.nvm/nvm.sh && nvm use >/dev/null && npm run dev -- --port 3000"],
+      "runtimeArgs": ["-c", "cd /Users/vresolvdev/Desktop/M.Abbas_FOMI_Assesment && PATH=$HOME/.nvm/versions/node/v24.18.1/bin:$PATH exec npm run dev -- --port 3000"],
       "port": 3000
     }
   ]

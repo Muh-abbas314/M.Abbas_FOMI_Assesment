@@ -1,0 +1,9 @@
+/* Horizontal scroller that fades out at the right edge instead of cutting thumbnails off. */
+.scroller {
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}

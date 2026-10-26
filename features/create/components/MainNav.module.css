@@ -1,0 +1,23 @@
+/* Thin track above the tabs; the terracotta thumb slides to the active tab. */
+.track {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-panel);
+  overflow: hidden;
+}
+
+.thumb {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(100% / var(--tab-count));
+  border-radius: 999px;
+  background: var(--color-accent-strong);
+  transform: translateX(calc(var(--active-index) * 100%));
+  transition: transform 250ms var(--ease-out-soft), opacity 150ms ease-out;
+}
+
+.thumb[data-hidden="true"] {
+  opacity: 0;
+}
