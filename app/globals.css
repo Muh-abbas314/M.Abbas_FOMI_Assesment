@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --breakpoint-3xl: 120rem;
+  --color-canvas: #FCFAF8;  --color-surface: #FFFFFF;  --color-panel: #F8ECE8;
+  --color-panel-strong: #F4E4E0;  --color-line: #EDE3DE;
+  --color-ink: #171717;  --color-ink-muted: #6E6662;  --color-ink-subtle: #7A726E;
+  --color-accent: #E49C84;  --color-accent-strong: #D07C60;  --color-accent-ink: #B25E3D;
+  --color-studio-bg: #0F0D0C;  --color-studio-surface: #181514;  --color-studio-raised: #221E1C;
+  --color-studio-line: #2E2926;  --color-studio-ink: #F3EEEA;  --color-studio-ink-muted: #A79E98;
+  --color-studio-accent: #E49C84;  --color-studio-on-accent: #1A0F0A;
+  --radius-panel: 16px;  --radius-card: 12px;  --radius-tile: 10px;
+  --shadow-float: 0 8px 24px rgb(23 23 23 / 0.06), 0 1px 2px rgb(23 23 23 / 0.04);
+  --ease-out-soft: cubic-bezier(.2, .8, .2, 1);
+}
+
+:root { --topbar-h: 56px; --history-h: 72px; }
+@media (min-width: 1024px) { :root { --topbar-h: 64px; --history-h: 88px; } }
+
+:focus-visible { outline: 2px solid var(--color-accent-ink); outline-offset: 2px; }
+[data-theme="studio"] :focus-visible { outline-color: var(--color-studio-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+  }
+}
