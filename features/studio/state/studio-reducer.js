@@ -4,6 +4,7 @@ import { isActiveStatus } from '@/lib/job-status';
 const QUEUE_FINISHED_LIMIT = 5;
 export const STOP_TOO_LATE_NOTICE = 'Finished before it could stop.';
 export const STOP_FAILED_NOTICE = "Couldn't stop it — still running.";
+export const INTERRUPTED_ERROR = 'Interrupted before it started. Credits refunded.';
 
 const isSettledUnpaid = (status) => status === 'failed' || status === 'cancelled';
 
@@ -171,6 +172,38 @@ export function studioReducer(state, action) {
     default:
       return state;
   }
+}
+
+/** Shape check for a saved studio state read back from storage. */
+export function isStudioStateLike(value) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    value.project !== null &&
+    typeof value.project === 'object' &&
+    Array.isArray(value.project.shots) &&
+    Array.isArray(value.project.renders) &&
+    typeof value.project.credits === 'number'
+  );
+}
+
+/**
+ * Make a saved state safe to resume: jobs that never got an id (the tab closed mid-request) are
+ * failed and refunded; pending stop requests are dropped so polling resumes and the server decides.
+ */
+export function reviveStudioState(saved) {
+  let refund = 0;
+  const revive = (job) => {
+    if (isActiveStatus(job.status) && !job.jobId) {
+      const result = settle(job, { status: 'failed', error: INTERRUPTED_ERROR, cancelRequested: false });
+      refund += result.refund;
+      return result.job;
+    }
+    return job.cancelRequested ? { ...job, cancelRequested: false } : job;
+  };
+  const shots = saved.project.shots.map((shot) => ({ ...shot, takes: shot.takes.map(revive) }));
+  const renders = saved.project.renders.map(revive);
+  return { ...saved, project: { ...saved.project, shots, renders, credits: saved.project.credits + refund } };
 }
 
 const JOB_FIELDS = ['status', 'stage', 'progress', 'etaMs', 'cost', 'refunded', 'cancelRequested', 'notice', 'createdAt', 'error'];
