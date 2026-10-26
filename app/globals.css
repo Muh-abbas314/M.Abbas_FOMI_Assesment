@@ -7,6 +7,7 @@
   --color-panel-strong: #F4E4E0;  --color-line: #EDE3DE;
   --color-ink: #171717;  --color-ink-muted: #6E6662;  --color-ink-subtle: #7A726E;
   --color-accent: #E49C84;  --color-accent-strong: #D07C60;  --color-accent-ink: #B25E3D;
+  --color-accent-deep: #9E5034; /* accent text on beige panels: 5.0:1 */
   --color-studio-bg: #0F0D0C;  --color-studio-surface: #181514;  --color-studio-raised: #221E1C;
   --color-studio-line: #2E2926;  --color-studio-ink: #F3EEEA;  --color-studio-ink-muted: #A79E98;
   --color-studio-accent: #E49C84;  --color-studio-on-accent: #1A0F0A;

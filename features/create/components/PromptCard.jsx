@@ -41,7 +41,7 @@ export default function PromptCard({ generation, onReuse, status, notice }) {
           aria-expanded={expanded}
           aria-controls={textId}
           onClick={() => setExpanded((open) => !open)}
-          className="-mt-2 self-start text-[12px] font-medium text-accent-ink underline-offset-2 hover:underline md:hidden"
+          className="-mt-2 self-start text-[12px] font-medium text-accent-deep underline-offset-2 hover:underline md:hidden"
         >
           {expanded ? 'Show less' : 'Show more'}
         </button>

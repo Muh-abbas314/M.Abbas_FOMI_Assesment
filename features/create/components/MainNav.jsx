@@ -15,7 +15,7 @@ export const NAV_TABS = [
 ];
 
 const itemClass =
-  'grid h-10 w-12 place-items-center rounded-full text-ink transition-[background-color,transform] duration-150 ease-out hover:bg-panel active:scale-[0.94] sm:w-14 lg:h-11 lg:w-[72px]';
+  'grid h-10 w-10 place-items-center rounded-full text-ink transition-[background-color,transform] duration-150 ease-out hover:bg-panel active:scale-[0.94] min-[375px]:w-11 sm:w-14 lg:h-11 lg:w-[72px]';
 
 /** The five-tab switcher from the mockup. Home/Image/Video work; the rest explain why they don't yet. */
 export default function MainNav({ active, onSelectTab }) {

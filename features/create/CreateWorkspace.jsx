@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import Composer from './composer/Composer';
+import ComposerDock from './composer/ComposerDock';
 import { composerReducer, initialComposerState } from './composer/composer-state';
+import EmptyFeed from './components/EmptyFeed';
 import Feed from './components/Feed';
 import HistoryStrip from './components/HistoryStrip';
 import Lightbox from './components/Lightbox';
@@ -26,7 +28,8 @@ export default function CreateWorkspace({ initialTab }) {
   const [composer, dispatchComposer] = useReducer(composerReducer, initialTab === 'video' ? 'video' : 'image', initialComposerState);
   const [viewerIndex, setViewerIndex] = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
-  const promptRef = useRef(null);
+  const railPromptRef = useRef(null);
+  const dockPromptRef = useRef(null);
   const highlightTimer = useRef(null);
 
   // Every finished result, newest first: the viewer and Gallery walk through this list.
@@ -51,7 +54,20 @@ export default function CreateWorkspace({ initialTab }) {
     syncModeToUrl(mode);
   }, []);
 
-  const focusPrompt = useCallback(() => promptRef.current?.focus(), []);
+  // Rail and dock share one draft; focus whichever one this screen size is showing.
+  const focusPrompt = useCallback(() => {
+    const visible = [railPromptRef.current, dockPromptRef.current].find((el) => el && el.offsetParent !== null);
+    visible?.focus();
+  }, []);
+
+  const pickExample = useCallback(
+    ({ mode, prompt }) => {
+      changeMode(mode);
+      dispatchComposer({ type: 'setPrompt', prompt });
+      focusPrompt();
+    },
+    [changeMode, focusPrompt],
+  );
 
   const reuse = useCallback(
     (generation) => {
@@ -104,9 +120,11 @@ export default function CreateWorkspace({ initialTab }) {
       <TopBar activeTab={activeTab} onSelectTab={selectTab} onOpenGallery={openGallery} />
 
       <div className="mx-auto max-w-[1680px] px-4 lg:px-6 2xl:px-8 3xl:max-w-[1760px]">
-        <div className="z-20 pb-3 pt-1 md:sticky md:top-[var(--topbar-h)]">
-          <HistoryStrip items={history} onSelect={jumpToGeneration} onViewAll={openGallery} />
-        </div>
+        {history.length > 0 && (
+          <div className="z-20 pb-3 pt-1 md:sticky md:top-[var(--topbar-h)]">
+            <HistoryStrip items={history} onSelect={jumpToGeneration} onViewAll={openGallery} />
+          </div>
+        )}
 
         <div className="items-start gap-6 lg:grid lg:grid-cols-[288px_1fr] 2xl:grid-cols-[320px_1fr]">
           <div className="sticky top-[calc(var(--topbar-h)+var(--history-h)+16px)] hidden max-h-[calc(100dvh-var(--topbar-h)-var(--history-h)-32px)] overflow-y-auto rounded-panel lg:block">
@@ -116,16 +134,29 @@ export default function CreateWorkspace({ initialTab }) {
               onModeChange={changeMode}
               onGenerate={handleGenerate}
               isSubmitting={isSubmitting}
-              promptRef={promptRef}
+              promptRef={railPromptRef}
               className="min-h-[calc(100dvh-var(--topbar-h)-var(--history-h)-32px)]"
             />
           </div>
           <main id="feed" className="min-w-0 pb-40 lg:pb-12">
             <h1 className="sr-only">Create</h1>
-            <Feed items={items} highlightedId={highlightedId} onOpen={openViewer} onReuse={reuse} onCancel={cancel} onRetry={retry} />
+            {items.length === 0 ? (
+              <EmptyFeed onPick={pickExample} />
+            ) : (
+              <Feed items={items} highlightedId={highlightedId} onOpen={openViewer} onReuse={reuse} onCancel={cancel} onRetry={retry} />
+            )}
           </main>
         </div>
       </div>
+
+      <ComposerDock
+        state={composer}
+        dispatch={dispatchComposer}
+        onModeChange={changeMode}
+        onGenerate={handleGenerate}
+        isSubmitting={isSubmitting}
+        promptRef={dockPromptRef}
+      />
 
       {viewerIndex !== null && viewerItems[viewerIndex] && (
         <Lightbox

@@ -1,0 +1,45 @@
+/* Bottom sheet on phones, centred panel from tablets up. Slides in with @starting-style. */
+.sheet {
+  margin: auto auto 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 85dvh;
+  border-radius: 20px 20px 0 0;
+  transform: translateY(0);
+  transition:
+    transform 250ms var(--ease-out-soft),
+    overlay 250ms allow-discrete,
+    display 250ms allow-discrete;
+}
+
+.sheet:not([open]) {
+  transform: translateY(100%);
+}
+
+@starting-style {
+  .sheet[open] {
+    transform: translateY(100%);
+  }
+}
+
+.sheet::backdrop {
+  background: rgb(23 23 23 / 0.35);
+}
+
+@media (min-width: 768px) {
+  .sheet {
+    margin: auto;
+    max-width: 32rem;
+    border-radius: var(--radius-panel);
+  }
+
+  .sheet:not([open]) {
+    transform: translateY(16px);
+  }
+
+  @starting-style {
+    .sheet[open] {
+      transform: translateY(16px);
+    }
+  }
+}

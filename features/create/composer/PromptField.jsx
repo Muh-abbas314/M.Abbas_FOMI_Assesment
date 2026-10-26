@@ -3,8 +3,11 @@ import { cn } from '@/lib/cn';
 
 export const PROMPT_PLACEHOLDER = 'Describe your imagination to be converted to a piece of art…';
 
-/** Prompt box. Cmd/Ctrl+Enter submits; the character counter only appears near the limit. */
-export default function PromptField({ value, onChange, onSubmitShortcut, textareaRef, rows = 6, children, className, textareaClassName }) {
+/**
+ * Prompt box. Cmd/Ctrl+Enter submits; the character counter only appears near the limit.
+ * `compact` is the dock version: one line that grows to four (CSS field-sizing), Generate at the end.
+ */
+export default function PromptField({ value, onChange, onSubmitShortcut, textareaRef, rows = 6, compact = false, children, className }) {
   const length = value.length;
   const over = length > PROMPT_MAX;
 
@@ -21,7 +24,7 @@ export default function PromptField({ value, onChange, onSubmitShortcut, textare
         aria-label="Describe your imagination"
         placeholder={PROMPT_PLACEHOLDER}
         value={value}
-        rows={rows}
+        rows={compact ? 1 : rows}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
@@ -30,12 +33,14 @@ export default function PromptField({ value, onChange, onSubmitShortcut, textare
           }
         }}
         className={cn(
-          'block w-full resize-none bg-transparent px-3.5 pb-14 pt-3 text-[13px] leading-relaxed text-ink placeholder:text-ink-subtle focus-visible:outline-none',
-          textareaClassName,
+          'block w-full resize-none bg-transparent text-[13px] leading-relaxed text-ink placeholder:text-ink-subtle focus-visible:outline-none',
+          compact
+            ? 'max-h-28 min-h-[42px] py-2.5 pl-3.5 pr-14 [field-sizing:content] md:min-h-[72px] md:pb-12 md:pr-3.5'
+            : 'px-3.5 pb-14 pt-3',
         )}
       />
-      <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-2">
-        <span aria-live="polite" className={cn('pl-1.5 text-[11px] tabular-nums', over ? 'font-medium text-accent-ink' : 'text-ink-muted')}>
+      <div className="absolute inset-x-2 bottom-1.5 flex items-center justify-between gap-2 md:bottom-2">
+        <span aria-live="polite" className={cn('pl-1.5 text-[11px] tabular-nums', over ? 'font-medium text-accent-deep' : 'text-ink-muted')}>
           {length >= PROMPT_COUNTER_FROM ? `${length} / ${PROMPT_MAX}` : ''}
         </span>
         {children}

@@ -12,10 +12,9 @@ export default function HistoryStrip({ items, onSelect, onViewAll, className }) 
       <button
         type="button"
         onClick={onViewAll}
-        aria-label="View all history"
         className="flex h-12 w-[72px] shrink-0 flex-col items-center justify-center rounded-tile border border-line bg-surface leading-tight transition-[border-color,transform] duration-150 hover:border-ink/15 active:scale-[0.97] lg:h-16 lg:w-[84px]"
       >
-        <span className="text-[13px] font-semibold text-ink">History</span>
+        <span className="text-[13px] font-semibold text-ink">History</span>{' '}
         <span className="text-[10px] text-ink-muted">view all</span>
       </button>
 
