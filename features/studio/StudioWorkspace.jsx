@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useHotkeys } from '@/lib/hooks/use-hotkeys';
+import { buildTimeline } from './playback/timeline';
+import { useBoardPlayback } from './playback/use-board-playback';
 import Board from './components/Board';
 import Inspector from './components/Inspector';
 import Stage from './components/Stage';
@@ -15,18 +17,36 @@ import { STUDIO_SHORTCUTS } from './studio-options';
 export default function StudioWorkspace() {
   const { state, dispatch, generateTake, retryTake, cancelTake, chooseTake } = useStudio();
   const [playing, setPlaying] = useState(false);
-  const [stageMode, setStageMode] = useState('shot'); // 'shot' | 'compare'
+  const [stageMode, setStageMode] = useState('shot'); // 'shot' | 'board' | 'compare'
   const { project } = state;
   const shot = selectedShot(state);
   const number = shot ? project.shots.indexOf(shot) + 1 : 0;
+  const timeline = useMemo(() => buildTimeline(project.shots), [project.shots]);
+  const playback = useBoardPlayback(timeline);
+  const { pause: pauseBoard, seek: seekBoard } = playback;
+
+  const changeStageMode = useCallback(
+    (mode) => {
+      setStageMode(mode);
+      setPlaying(false);
+      if (mode !== 'board') pauseBoard();
+    },
+    [pauseBoard],
+  );
 
   const selectShot = useCallback(
     (shotId) => {
       dispatch({ type: 'selectShot', shotId });
       setPlaying(false);
-      setStageMode('shot');
+      // In Board view, picking a card jumps the playhead to that shot.
+      if (stageMode === 'board') {
+        const segment = timeline.find((s) => s.shotId === shotId);
+        if (segment) seekBoard(segment.start);
+      } else {
+        setStageMode('shot');
+      }
     },
-    [dispatch],
+    [dispatch, stageMode, timeline, seekBoard],
   );
 
   const actions = useMemo(() => {
@@ -37,10 +57,16 @@ export default function StudioWorkspace() {
     const step = (delta) => () => {
       dispatch({ type: 'selectAdjacent', delta });
       setPlaying(false);
-      setStageMode('shot');
+    };
+    const shuttle = (key) => () => {
+      if (stageMode !== 'board') changeStageMode('board');
+      playback.shuttle(key);
     };
     return {
-      togglePlay: () => setPlaying((value) => !value),
+      togglePlay: () => (stageMode === 'board' ? playback.toggle() : setPlaying((value) => !value)),
+      shuttleBack: shuttle('j'),
+      shuttlePause: shuttle('k'),
+      shuttleForward: shuttle('l'),
       prevShot: step(-1),
       nextShot: step(1),
       moveLeft: () => shot && dispatch({ type: 'moveShot', shotId: shot.id, delta: -1 }),
@@ -51,7 +77,7 @@ export default function StudioWorkspace() {
       chooseTake4: choose(4),
       generateTake: () => shot && generateTake(shot.id),
     };
-  }, [dispatch, shot, chooseTake, generateTake]);
+  }, [dispatch, shot, chooseTake, generateTake, stageMode, changeStageMode, playback]);
 
   const bindings = useMemo(
     () => Object.fromEntries(STUDIO_SHORTCUTS.filter((s) => actions[s.action]).map((s) => [s.keys, actions[s.action]])),
@@ -70,6 +96,9 @@ export default function StudioWorkspace() {
 
       <Stage
         mode={stageMode}
+        onModeChange={changeStageMode}
+        timeline={timeline}
+        playback={playback}
         shot={shot}
         number={number}
         playing={playing}
@@ -94,10 +123,7 @@ export default function StudioWorkspace() {
           <TakesStack
             shot={shot}
             onChoose={(takeId) => chooseTake(shot.id, takeId)}
-            onCompare={() => {
-              setPlaying(false);
-              setStageMode('compare');
-            }}
+            onCompare={() => changeStageMode('compare')}
             onCancel={(takeId) => cancelTake(shot.id, takeId)}
             onRetry={() => retryTake(shot.id)}
           />
