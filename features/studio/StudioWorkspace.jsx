@@ -4,20 +4,31 @@ import { useCallback, useMemo, useState } from 'react';
 import { useHotkeys } from '@/lib/hooks/use-hotkeys';
 import { buildTimeline } from './playback/timeline';
 import { useBoardPlayback } from './playback/use-board-playback';
+import { isActiveStatus } from '@/lib/job-status';
+import Button from '@/components/ui/Button';
+import Announcer from './components/Announcer';
 import Board from './components/Board';
 import Inspector from './components/Inspector';
+import QueueButton from './components/QueueButton';
+import RenderFinalDialog from './components/RenderFinalDialog';
+import RenderQueue from './components/RenderQueue';
 import Stage from './components/Stage';
 import StudioTopBar from './components/StudioTopBar';
 import TakesStack from './components/TakesStack';
-import { selectedShot } from './state/studio-reducer';
+import { finalCost } from './cost';
+import { selectedShot, selectQueue } from './state/studio-reducer';
 import { useStudio } from './state/StudioProvider';
 import { STUDIO_SHORTCUTS } from './studio-options';
 
 /** Director's Board: stage (what you're looking at), inspector (the shot you're shaping), board (the whole film). */
 export default function StudioWorkspace() {
-  const { state, dispatch, generateTake, retryTake, cancelTake, chooseTake } = useStudio();
+  const { state, dispatch, generateTake, retryTake, cancelTake, chooseTake, renderFinal, cancelRender } = useStudio();
   const [playing, setPlaying] = useState(false);
   const [stageMode, setStageMode] = useState('shot'); // 'shot' | 'board' | 'compare'
+  const [queueOpen, setQueueOpen] = useState(false);
+  const [finalOpen, setFinalOpen] = useState(false);
+  const queue = useMemo(() => selectQueue(state), [state]);
+  const activeCount = queue.filter((entry) => isActiveStatus(entry.status)).length;
   const { project } = state;
   const shot = selectedShot(state);
   const number = shot ? project.shots.indexOf(shot) + 1 : 0;
@@ -79,11 +90,34 @@ export default function StudioWorkspace() {
     };
   }, [dispatch, shot, chooseTake, generateTake, stageMode, changeStageMode, playback]);
 
+  const cancelEntry = useCallback(
+    (entry) => (entry.kind === 'final' ? cancelRender(entry.renderId) : cancelTake(entry.shotId, entry.takeId)),
+    [cancelRender, cancelTake],
+  );
+
+  // "Watch" a finished final: the mock's final film is the assembled board, played from the top.
+  const watchFinal = useCallback(() => {
+    setQueueOpen(false);
+    setStageMode('board');
+    setPlaying(false);
+    playback.seek(0);
+    playback.play();
+  }, [playback]);
+
+  const jumpToShot = useCallback(
+    (n) => {
+      const target = project.shots[n - 1];
+      if (target) selectShot(target.id);
+      setFinalOpen(false);
+    },
+    [project.shots, selectShot],
+  );
+
   const bindings = useMemo(
     () => Object.fromEntries(STUDIO_SHORTCUTS.filter((s) => actions[s.action]).map((s) => [s.keys, actions[s.action]])),
     [actions],
   );
-  useHotkeys(bindings, { enabled: stageMode !== 'compare' });
+  useHotkeys(bindings, { enabled: stageMode !== 'compare' && !finalOpen });
 
   return (
     <div
@@ -91,7 +125,12 @@ export default function StudioWorkspace() {
       className="flex min-h-dvh flex-col bg-studio-bg text-studio-ink lg:grid lg:h-dvh lg:grid-cols-[1fr_340px] lg:grid-rows-[56px_minmax(0,1fr)_184px] lg:overflow-hidden 2xl:grid-cols-[1fr_380px] 2xl:grid-rows-[56px_minmax(0,1fr)_208px]"
     >
       <div className="lg:col-span-2">
-        <StudioTopBar project={project} />
+        <StudioTopBar project={project}>
+          <QueueButton activeCount={activeCount} open={queueOpen} onClick={() => setQueueOpen((open) => !open)} />
+          <Button variant="studio" size="sm" onClick={() => setFinalOpen(true)}>
+            {`Render final · ${finalCost(project.shots)} cr`}
+          </Button>
+        </StudioTopBar>
       </div>
 
       <Stage
@@ -133,6 +172,20 @@ export default function StudioWorkspace() {
       <div className="lg:col-span-2 lg:min-h-0">
         <Board shots={project.shots} selectedShotId={state.selectedShotId} onSelect={selectShot} onAdd={() => dispatch({ type: 'addShot' })} />
       </div>
+
+      <RenderQueue open={queueOpen} entries={queue} onClose={() => setQueueOpen(false)} onCancel={cancelEntry} onWatch={watchFinal} />
+      <RenderFinalDialog
+        open={finalOpen}
+        shots={project.shots}
+        credits={project.credits}
+        onClose={() => setFinalOpen(false)}
+        onJumpToShot={jumpToShot}
+        onConfirm={() => {
+          renderFinal();
+          setFinalOpen(false);
+        }}
+      />
+      <Announcer entries={queue} />
     </div>
   );
 }

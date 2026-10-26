@@ -5,7 +5,7 @@ import JobWatcher from '@/components/JobWatcher';
 import { cancelJob, createJob } from '@/lib/api/jobs-client';
 import { isActiveStatus } from '@/lib/job-status';
 import { loadJSON, saveJSON } from '@/lib/storage';
-import { takeCost } from '../cost';
+import { finalCost, missingTakeShots, takeCost, totalSeconds } from '../cost';
 import { STORAGE_KEY_STUDIO } from '../studio-options';
 import { initStudioState, isStudioStateLike, reviveStudioState, studioReducer } from './studio-reducer';
 
@@ -42,7 +42,7 @@ function newJob(cost) {
  */
 export function StudioProvider({ initialProject, children }) {
   const [state, dispatch] = useReducer(studioReducer, initialProject, initStudioState);
-  const hydratedRef = useRef(false);
+  const initialStateRef = useRef(state);
   const stateRef = useRef(state);
   const startingRef = useRef(new Set());
 
@@ -50,15 +50,15 @@ export function StudioProvider({ initialProject, children }) {
     stateRef.current = state;
   }, [state]);
 
-  // Save only after hydration, so the first render can't overwrite what's stored.
+  // Never write while the state is still what we started with: in development React runs effects
+  // twice, and saving the untouched seed would overwrite the user's board before it's restored.
   useEffect(() => {
-    if (hydratedRef.current) saveJSON(STORAGE_KEY_STUDIO, state);
+    if (state !== initialStateRef.current) saveJSON(STORAGE_KEY_STUDIO, state);
   }, [state]);
 
   useEffect(() => {
     const saved = loadJSON(STORAGE_KEY_STUDIO, null);
     if (isStudioStateLike(saved)) dispatch({ type: 'hydrate', state: reviveStudioState(saved) });
-    hydratedRef.current = true;
   }, []);
 
   const startTake = useCallback(async (shotId, attempt) => {
@@ -102,14 +102,46 @@ export function StudioProvider({ initialProject, children }) {
 
   const chooseTake = useCallback((shotId, takeId) => dispatch({ type: 'chooseTake', shotId, takeId }), []);
 
+  const renderFinal = useCallback(async () => {
+    const { project } = stateRef.current;
+    const cost = finalCost(project.shots);
+    if (missingTakeShots(project.shots).length > 0 || project.credits < cost) return;
+    const totalSec = totalSeconds(project.shots);
+    const render = { ...newJob(cost), shotCount: project.shots.length, totalSec };
+    dispatch({ type: 'renderQueued', render });
+    try {
+      const { jobId, createdAt } = await createJob({
+        mode: 'video',
+        prompt: project.title,
+        settings: { aspectRatio: '16:9', durationSec: totalSec, quality: 'final' },
+      });
+      dispatch({ type: 'renderJobAssigned', renderId: render.id, jobId, createdAt });
+    } catch (error) {
+      dispatch({ type: 'renderCreateFailed', renderId: render.id, error: error.message });
+    }
+  }, []);
+
+  const cancelRender = useCallback(async (renderId) => {
+    const render = stateRef.current.project.renders.find((r) => r.id === renderId);
+    if (!render?.jobId || render.cancelRequested) return;
+    dispatch({ type: 'renderCancelRequested', renderId });
+    try {
+      const result = await cancelJob(render.jobId);
+      if (result.outcome === 'cancelled') dispatch({ type: 'renderCancelled', renderId });
+      else dispatch({ type: 'renderCancelRejected', renderId, state: result.state });
+    } catch {
+      dispatch({ type: 'renderCancelFailed', renderId });
+    }
+  }, []);
+
   const value = useMemo(
-    () => ({ state, dispatch, generateTake, retryTake, cancelTake, chooseTake }),
-    [state, generateTake, retryTake, cancelTake, chooseTake],
+    () => ({ state, dispatch, generateTake, retryTake, cancelTake, chooseTake, renderFinal, cancelRender }),
+    [state, generateTake, retryTake, cancelTake, chooseTake, renderFinal, cancelRender],
   );
 
-  const watchedTakes = state.project.shots.flatMap((shot) =>
-    shot.takes.filter((t) => t.jobId && isActiveStatus(t.status) && !t.cancelRequested).map((take) => ({ shotId: shot.id, take })),
-  );
+  const isWatched = (job) => job.jobId && isActiveStatus(job.status) && !job.cancelRequested;
+  const watchedTakes = state.project.shots.flatMap((shot) => shot.takes.filter(isWatched).map((take) => ({ shotId: shot.id, take })));
+  const watchedRenders = state.project.renders.filter(isWatched);
 
   return (
     <StudioContext.Provider value={value}>
@@ -118,6 +150,13 @@ export function StudioProvider({ initialProject, children }) {
           key={take.jobId}
           jobId={take.jobId}
           onUpdate={(jobState) => dispatch({ type: 'takeUpdate', shotId, takeId: take.id, jobId: take.jobId, state: jobState })}
+        />
+      ))}
+      {watchedRenders.map((render) => (
+        <JobWatcher
+          key={render.jobId}
+          jobId={render.jobId}
+          onUpdate={(jobState) => dispatch({ type: 'renderUpdate', renderId: render.id, jobId: render.jobId, state: jobState })}
         />
       ))}
       {children}
