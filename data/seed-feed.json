@@ -1,0 +1,34 @@
+[
+  {
+    "id": "seed-portrait-b",
+    "mode": "image",
+    "prompt": "Studio portrait of a red-haired woman in a cream knit sweater, soft grey backdrop, natural smile, 85mm lens, gentle window light",
+    "settings": { "model": "fomi-photoreal", "aspectRatio": "3:4", "count": 4 },
+    "mediaIds": ["img-portrait-05", "img-portrait-06", "img-portrait-07", "img-portrait-08"],
+    "createdAt": "2026-10-26T09:40:00Z"
+  },
+  {
+    "id": "seed-portrait-a",
+    "mode": "image",
+    "prompt": "A professional portrait photograph of a smiling 31-year-old redheaded woman with warm brown eyes and softly tousled auburn hair framing her face. She is turned slightly towards the viewer, offering a genuine and approachable expression. She is wearing a cream-colored cashmere sweater and delicate gold earrings. The background is a softly blurred expanse of muted grey and beige tones, suggesting a modern art gallery. There is subtle directional lighting.",
+    "settings": { "model": "fomi-photoreal", "aspectRatio": "3:4", "count": 4 },
+    "mediaIds": ["img-portrait-01", "img-portrait-02", "img-portrait-03", "img-portrait-04"],
+    "createdAt": "2026-10-26T09:32:00Z"
+  },
+  {
+    "id": "seed-forest",
+    "mode": "video",
+    "prompt": "Slow drone push over a misty pine forest at sunrise, volumetric light through the trees",
+    "settings": { "model": "fomi-motion", "aspectRatio": "16:9", "durationSec": 6, "camera": "Push in" },
+    "mediaIds": ["vid-01", "vid-03"],
+    "createdAt": "2026-10-26T09:10:00Z"
+  },
+  {
+    "id": "seed-postcards",
+    "mode": "image",
+    "prompt": "Dreamlike travel postcards at golden hour: Paris, a mountain lake, a neon city, a misty forest path",
+    "settings": { "model": "fomi-image-2", "aspectRatio": "4:3", "count": 4 },
+    "mediaIds": ["img-scene-03", "img-scene-01", "img-scene-04", "img-scene-02"],
+    "createdAt": "2026-10-26T08:55:00Z"
+  }
+]
