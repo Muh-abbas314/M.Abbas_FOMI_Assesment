@@ -1,0 +1,9 @@
+/* The poster stays underneath; the video only fades in once it is actually playing. */
+.video {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.video[data-playing="true"] {
+  opacity: 1;
+}

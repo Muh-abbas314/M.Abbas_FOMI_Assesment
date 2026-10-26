@@ -1,0 +1,26 @@
+/* Full-screen viewer. Fades in with @starting-style (no JS animation needed). */
+.dialog {
+  opacity: 1;
+  transition: opacity 200ms ease-out, overlay 200ms allow-discrete, display 200ms allow-discrete;
+}
+
+.dialog::backdrop {
+  background: rgb(23 23 23 / 0.6);
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+  }
+}
+
+.media {
+  animation: settle 260ms var(--ease-out-soft);
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
