@@ -9,7 +9,7 @@ My submission for the Fomi Frontend Developer take-home. It's one Next.js app wi
 
 Opening `/` takes you to `/create`. The folder icon in the top bar opens the studio.
 
-**Live demo:** _add the Vercel link here_
+**Live demo:** https://mabbasfomi.vercel.app — [/create](https://mabbasfomi.vercel.app/create) (Part A) · [/studio](https://mabbasfomi.vercel.app/studio) (Part B)
 
 ---
 
