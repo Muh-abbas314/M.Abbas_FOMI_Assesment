@@ -30,8 +30,6 @@ Then open http://localhost:3000.
 | `npm run dev` | Starts the app for development |
 | `npm run build` then `npm start` | Production build |
 | `npm run lint` | Checks code style |
-| `npm test` | Unit and component tests (Vitest) |
-| `npm run e2e` | Browser tests (Playwright): main flows, every screen width, accessibility scans |
 
 ---
 
@@ -113,7 +111,6 @@ Results come from a small set of licensed stock photos and clips. The words in y
 - Next.js 16 (App Router), React 19, JavaScript.
 - Tailwind CSS plus CSS Modules (for keyframes and masks).
 - No animation library: CSS transitions only. Motion is turned off for people who ask for reduced motion.
-- Vitest + Testing Library for logic and components, Playwright + axe for flows, screen sizes and accessibility.
 
 ### Folders
 
@@ -125,7 +122,6 @@ features/studio/  Part B
 lib/              mock job engine, API client, hooks, helpers
 data/             seed data (JSON)
 public/media/     licensed photos and clips
-e2e/              browser tests
 ```
 
 ### Quality checks for `/create` (production build)
@@ -139,7 +135,6 @@ There is no sideways scrolling at any width from 320px to 2560px.
 
 ---
 
-## More
+## Credits
 
-- [DECISIONS.md](DECISIONS.md): every product and engineering choice, why I made it, and what I gave up.
-- [CREDITS.md](CREDITS.md): photo and video credits (Pexels).
+All photos and videos are from [Pexels](https://www.pexels.com) under the Pexels License. Each file's photographer and source page are listed in `data/media.json`.
