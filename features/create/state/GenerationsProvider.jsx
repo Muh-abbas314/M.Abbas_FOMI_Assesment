@@ -23,25 +23,24 @@ export function GenerationsProvider({ initialFeed, fresh = false, children }) {
   const [items, dispatch] = useReducer(generationsReducer, initialFeed);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
-  const hydratedRef = useRef(false);
+  const initialItemsRef = useRef(items);
   const itemsRef = useRef(items);
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
 
-  // Save after hydration only, so the first render can't overwrite what's stored.
+  // Never write while the feed is still what we started with: in development React runs effects
+  // twice, and saving the untouched seed would overwrite saved work before it's restored.
   useEffect(() => {
-    if (fresh || !hydratedRef.current) return;
+    if (fresh || items === initialItemsRef.current) return;
     saveJSON(STORAGE_KEY_CREATE, items.filter((g) => !g.id.startsWith('seed-')).slice(0, MAX_PERSISTED));
   }, [items, fresh]);
 
   useEffect(() => {
-    if (!fresh) {
-      const saved = loadJSON(STORAGE_KEY_CREATE, []);
-      const rows = Array.isArray(saved) ? saved.filter(isGenerationLike) : [];
-      if (rows.length) dispatch({ type: 'hydrate', items: rows });
-    }
-    hydratedRef.current = true;
+    if (fresh) return;
+    const saved = loadJSON(STORAGE_KEY_CREATE, []);
+    const rows = Array.isArray(saved) ? saved.filter(isGenerationLike) : [];
+    if (rows.length) dispatch({ type: 'hydrate', items: rows });
   }, [fresh]);
 
   const startJob = useCallback(async (id, body) => {

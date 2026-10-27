@@ -11,7 +11,7 @@ export const NAV_TABS = [
   { id: 'image', label: 'Image', icon: ImageIcon },
   { id: 'video', label: 'Video', icon: Video },
   { id: 'edit', label: 'Edit', icon: PenLine, disabled: true },
-  { id: 'projects', label: 'Projects', icon: Folder, disabled: true },
+  { id: 'studio', label: 'Studio', icon: Folder, href: '/studio', description: "Director's Board" },
 ];
 
 const itemClass =
@@ -31,7 +31,7 @@ export default function MainNav({ active, onSelectTab }) {
         <span className={styles.thumb} data-hidden={activeIndex < 0} />
       </div>
       <ul className="flex">
-        {NAV_TABS.map(({ id, label, icon: Icon, href, disabled }) => {
+        {NAV_TABS.map(({ id, label, icon: Icon, href, disabled, description }) => {
           const current = id === active ? 'page' : undefined;
           const icon = <Icon aria-hidden size={20} strokeWidth={1.75} />;
 
@@ -49,7 +49,7 @@ export default function MainNav({ active, onSelectTab }) {
 
           return (
             <li key={id}>
-              <Tooltip content={label}>
+              <Tooltip content={description ?? label} describe={Boolean(description)}>
                 {href ? (
                   <Link
                     href={href}
@@ -57,7 +57,8 @@ export default function MainNav({ active, onSelectTab }) {
                     aria-current={current}
                     className={itemClass}
                     onClick={(event) => {
-                      if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+                      // Home stays on this page (no reload); other links navigate normally.
+                      if (id !== 'home' || event.metaKey || event.ctrlKey || event.shiftKey) return;
                       event.preventDefault();
                       onSelectTab(id);
                     }}

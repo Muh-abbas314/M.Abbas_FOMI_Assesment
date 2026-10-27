@@ -4,7 +4,7 @@ import Tooltip from './Tooltip';
 
 /** Icon-only button. `label` is its accessible name and its tooltip. */
 const IconButton = forwardRef(function IconButton(
-  { label, icon: Icon, className, tooltip = true, tone = 'light', size = 36, type = 'button', ...props },
+  { label, icon: Icon, className, tooltip = true, tooltipAlign = 'center', tone = 'light', size = 36, type = 'button', ...props },
   ref,
 ) {
   const button = (
@@ -25,7 +25,13 @@ const IconButton = forwardRef(function IconButton(
       <Icon aria-hidden size={Math.round(size * 0.5)} strokeWidth={1.75} />
     </button>
   );
-  return tooltip ? <Tooltip content={label}>{button}</Tooltip> : button;
+  return tooltip ? (
+    <Tooltip content={label} align={tooltipAlign}>
+      {button}
+    </Tooltip>
+  ) : (
+    button
+  );
 });
 
 export default IconButton;

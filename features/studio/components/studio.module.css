@@ -1,0 +1,22 @@
+/* How a shot enters during board playback, from the previous shot's "transition out".
+   The frame behind is black, so fading from opacity 0 reads as a fade through black.
+   The global reduced-motion rule turns both into cuts. */
+.enterDissolve {
+  animation: dissolve 300ms ease-out both;
+}
+
+.enterFade {
+  animation: fade-in 400ms ease-out both;
+}
+
+@keyframes dissolve {
+  from {
+    opacity: 0.3;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
