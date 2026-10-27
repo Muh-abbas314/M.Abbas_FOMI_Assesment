@@ -27,8 +27,6 @@ Then open http://localhost:3000. It redirects to `/create`.
 | `npm run dev` | Dev server (Turbopack) |
 | `npm run build` / `npm start` | Production build and server |
 | `npm run lint` | ESLint |
-| `npm test` | Unit and component tests (Vitest + Testing Library) |
-| `npm run e2e` | Browser tests (Playwright): flows, responsive overflow at 320–2560px, axe accessibility scans |
 
 ## Things to try on `/create`
 
@@ -44,11 +42,11 @@ Then open http://localhost:3000. It redirects to `/create`.
 - **Support** (top right) lists the keyboard shortcuts.
 - **Seed** under Advanced: the same seed and prompt give the same results.
 
-`MOCK_JOB_SPEED=4 npm run dev` speeds the mock clock up (the e2e tests use 4).
+`MOCK_JOB_SPEED=4 npm run dev` speeds the mock clock up.
 
 ## How the mock API works
 
-`POST /api/generations` returns a job id that *is* the job: start time, type, result count, aspect ratio and seed, packed as base64url JSON. `GET /api/generations/:id` works out progress from the clock on every request. No server memory is shared, so it behaves the same on any Vercel instance and survives reloads. See [DECISIONS.md](DECISIONS.md).
+`POST /api/generations` returns a job id that *is* the job: start time, type, result count, aspect ratio and seed, packed as base64url JSON. `GET /api/generations/:id` works out progress from the clock on every request. No server memory is shared, so it behaves the same on any Vercel instance and survives reloads.
 
 ## Structure
 
@@ -60,8 +58,6 @@ features/create/         Part A: workspace, composer (rail + dock), feed, viewer
 lib/                     job engine + validation (mock), API client, hooks, storage, formatting, shared option lists
 data/                    seed feed and media catalogue (JSON)
 public/media/            licensed Pexels photos, clips and posters
-e2e/                     Playwright specs
-test/                    test helpers and fixtures
 ```
 
 ## Quality checks
@@ -73,12 +69,8 @@ Lighthouse on a production build (`/create`):
 | Desktop | 98 | 100 | 100 | 1.0 s | 0 |
 | Mobile (simulated slow 4G) | 93 | 100 | 100 | 3.2 s | 0 |
 
-Plus axe scans at 1280px and 375px with no serious or critical issues, and no horizontal scroll at any width from 320px to 2560px.
-
-## Decisions
-
-Every product and engineering choice, with why and what it cost, is in [DECISIONS.md](DECISIONS.md).
+No horizontal scroll at any width from 320px to 2560px.
 
 ## Credits
 
-Photos and clips are from Pexels. See [CREDITS.md](CREDITS.md).
+All photos and videos are from [Pexels](https://www.pexels.com) under the Pexels License. Each file's photographer and source page are listed in `data/media.json`.

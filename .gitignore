@@ -50,3 +50,8 @@ next-env.d.ts
 
 # planning docs stay local, never pushed
 /docs/
+
+# local-only notes (interview prep) and Next.js-generated agent file
+/DECISIONS.md
+/AGENTS.md
+/CLAUDE.md
